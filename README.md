@@ -152,7 +152,7 @@ Tested dependency targets from the paper:
 
 ---
 
-## Dataset preparation
+## 6. Dataset preparation
 
 The repository uses **manifest files** for reproducibility. Each JSON manifest is a list of clip records. Every record must contain:
 
@@ -173,11 +173,11 @@ The repository uses **manifest files** for reproducibility. Each JSON manifest i
 ```
 
 
-### Important paper ambiguity
+### 7. Important paper ambiguity
 
 The paper does **not** specify how depth maps, semantic maps, or pose descriptors are generated from raw video. This repository therefore assumes those aligned modalities are already available, and does not invent an undocumented preprocessing model. The provided `adapt/data/prepare_clips.py` is intentionally a manifest-builder stub for your own directory layout.
 
-## Configs
+## 8. Configs
 
 - `configs/jaad_beh.yaml`
 - `configs/jaad_all.yaml`
@@ -192,7 +192,7 @@ The base config includes the paper hyperparameters:
 - total batch size `32` via `8/GPU × 4 GPUs`
 - Adam, no weight decay, gradient clip `1.0`, early stopping patience `25` 
 
-## Training
+## 9. Training
 
 Single node, 4 GPUs:
 
@@ -206,7 +206,7 @@ PIE:
 torchrun --nproc_per_node=4 scripts/train.py --config configs/pie.yaml
 ```
 
-### Fine-tuning schedule
+### 10. Fine-tuning schedule
 
 - Stage 1, epochs `1–20`: VFE frozen, train non-backbone modules only, `lr=2e-5`
 - Stage 2, epochs `21–80`: unfreeze last two Swin stages, backbone lr `2e-6`
@@ -214,7 +214,7 @@ torchrun --nproc_per_node=4 scripts/train.py --config configs/pie.yaml
 
 The paper contains a freeze-policy inconsistency: Sec. 2.2 says patch embedding and the first two Swin stages stay frozen throughout, while Sec. 2.6 says all stages are unfrozen in Stage 3. This repository defaults to the stricter Sec. 2.2 interpretation, controlled by `train.schedule.strict_vfe_freeze_rule`.
 
-## Evaluation
+## 11. Evaluation
 
 ```bash
 python scripts/eval.py --config configs/jaad_beh.yaml --checkpoint outputs/adapt_jaad_beh/best.pt --split test
@@ -229,7 +229,7 @@ Metrics implemented exactly as described in the paper:
 - Recall
 - threshold `0.5` for thresholded metrics
 
-## Inference
+## 12. Inference
 
 ```bash
 python scripts/infer.py \
@@ -241,7 +241,7 @@ python scripts/infer.py \
 
 The inference output contains probability, predicted label, and the SCMA sparsity mask for interpretation.
 
-## Reproducibility guarantees
+## 13. Reproducibility guarantees
 
 - global seed control for Python, NumPy, and PyTorch
 - deterministic PyTorch mode with cuDNN determinism enabled
@@ -250,7 +250,7 @@ The inference output contains probability, predicted label, and the SCMA sparsit
 - best and last checkpoint saving
 - DDP-ready with SyncBatchNorm and AMP
 
-## Expected results from the paper
+## 14 Expected results from the paper
 
 | Split | Acc | AUC | F1 | Precision | Recall |
 |---|---:|---:|---:|---:|---:|
@@ -262,10 +262,10 @@ Reported in the paper tables.
 
 ---
 
-## 12. License & Contributions
+## 15. License & Contributions
 
 **License :**
-Released under the MIT License. © 2026 GenDiff Authors. All rights reserved.
+Released under the MIT License. © 2026 ADAPT Authors. All rights reserved.
 
 **Contribution Guidelines :**
 We welcome pull requests and improvements.
