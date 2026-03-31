@@ -1,35 +1,142 @@
-# ADAPT: Adaptive Cross-Modal Fusion with Sparse Attention for Pedestrian Crossing Intention Prediction
+# Adaptive Cross-Modal Fusion with Sparse Attention for Pedestrian Crossing Intention Prediction
 
-Research-grade PyTorch implementation of **ADAPT**, following the paper *Adaptive Cross-Modal Fusion with Sparse Attention for Pedestrian Crossing Intention Prediction*. The repository implements the five-module pipeline described in the paper: shared **Swin Transformer V2 Tiny** visual encoding, **CMGA** local/global visual fusion, **MFE** with two-layer Mamba SSM, **SCMA** top-k sparse cross-modal attention, and **TFF** ViT-style temporal fusion. fileciteturn2file0L78-L95
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?logo=PyTorch&logoColor=white)](https://pytorch.org/)
 
-## Paper summary
+Official implementation of the paper:
 
-ADAPT predicts whether a pedestrian will cross within a 1–2 second horizon from a 16-frame observation window. Inputs are four aligned visual modalities plus speed, bounding boxes, and pose descriptors. The model uses selective sparse fusion rather than dense inter-modal attention, and the paper reports strong results on JAAD and PIE. fileciteturn2file0L113-L123 fileciteturn2file0L216-L231
+> **“Adaptive Cross-Modal Fusion with Sparse Attention for Pedestrian Crossing Intention Prediction”**  
+> *Md Mahfuzur Rahman, Pengzhan Zhou, A. F. M. Abdun Noor, Md Imam Ahasan, Kah Ong Michael Goh, S. M. Hasan Mahmud*  
+> Submitted to **PeerJ Computer Science (Applications of  AI category)**, April 2026.
 
-## Architecture
+---
 
-```text
-RGB/local depth/global semantic/global depth
-    │
-    ├── shared Swin-V2-T backbone (VFE)
-    │      └── 1×1 projection → [B,N,256,8,8]
-    │
-    ├── CMGA
-    │      ├── local branch: RGB + local depth
-    │      ├── global branch: semantic + global depth
-    │      └── routing gate → F_L, F_G
-    │
-    ├── MFE
-    │      └── speed + bbox + pose → 2-layer Mamba → F_M
-    │
-    ├── SCMA
-    │      └── sparse top-k attention over {F_L, F_G, F_M}
-    │
-    └── TFF
-           └── CLS token + 4-layer transformer encoder + MLP head → p(cross)
+## 1. Project Description
+This repository provides a fully reproducible PyTorch implementation of ADAPT (Adaptive Domain-Aware Pedestrian Crossing Transformer), a state-of-the-art multimodal framework for pedestrian crossing intention prediction as proposed in the paper. Pedestrian intention prediction is a safety-critical component in autonomous driving systems, enabling vehicles to anticipate whether a pedestrian is likely to cross the road within a short time horizon (1–2 seconds). Unlike traditional approaches that rely on a single modality or naive fusion strategies, ADAPT leverages heterogeneous multimodal inputs and introduces adaptive, sparse, and efficient cross-modal fusion mechanisms.
+
+**Core features :**
+- Multimodal Fusion Framework
+- Shared Swin Transformer V2 Backbone (VFE)
+- Cross-Modality Guided Attention (CMGA)
+- Mamba-based Motion Encoding (MFE)
+- Sparse Cross-Modal Attention (SCMA)
+- Temporal Feature Fusion (TFF)
+- Multi-Stage Training Strategy
+
+---
+
+## 2. Dataset Information
+**JAAD (Joint Attention in Autonomous Driving)**
+- **Description:** Urban driving dataset with annotated pedestrian behavior, bounding boxes, and contextual attributes.
+- **DOI:** [https://doi.org/10.48550/arXiv.1609.04741](https://doi.org/10.48550/arXiv.1609.04741)
+- **Website:** [https://data.nvision2.eecs.yorku.ca/JAAD_dataset/](https://data.nvision2.eecs.yorku.ca/JAAD_dataset/)
+
+**PIE (Pedestrian Intention Estimation)**
+- **Description:** Continuous driving dataset with richer ego-motion signals and diverse conditions.
+- **DOI:** [https://doi.org/10.1109/ICCV.2019.00636](https://doi.org/10.1109/ICCV.2019.00636)
+- **Website:** [https://data.nvision2.eecs.yorku.ca/PIE_dataset/](https://data.nvision2.eecs.yorku.ca/PIE_dataset/)
+
+---
+
+## 3. Code Information
+The repository is designed with a modular, scalable, and research-oriented structure, enabling easy experimentation, reproducibility, and extension.
+**Repository layout :**
+```bash
+adapt_repo/
+├── adapt/
+│   ├── __init__.py
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── dataset.py              # Multimodal clip dataset and sample parsing
+│   │   ├── manifest.py             # Manifest loading utilities
+│   │   ├── samplers.py             # Weighted sampling helpers
+│   │   └── transforms.py           # Synchronized multimodal preprocessing/augmentation
+│   ├── engine/
+│   │   ├── __init__.py
+│   │   ├── evaluator.py            # Validation/test evaluation and metric computation
+│   │   ├── infer.py                # Inference pipeline
+│   │   └── trainer.py              # Training loop, AMP, DDP, checkpointing
+│   ├── losses/
+│   │   ├── __init__.py
+│   │   └── intent_loss.py          # Composite loss: weighted BCE + head regularization
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── adapt.py                # Full ADAPT model assembly
+│   │   ├── cmga.py                 # Cross-Modality Guided Attention module
+│   │   ├── mfe.py                  # Motion Feature Encoding with Mamba SSM
+│   │   ├── scma.py                 # Sparse Cross-Modal Attention
+│   │   ├── swin_vfe.py             # Visual Feature Encoding with Swin Transformer V2 Tiny
+│   │   └── tff.py                  # Temporal Feature Fusion transformer
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── checkpoint.py           # Save/load checkpoints
+│   │   ├── config.py               # YAML config parsing
+│   │   ├── distributed.py          # DDP setup/cleanup helpers
+│   │   ├── logger.py               # Console/file/TensorBoard logging
+│   │   ├── metrics.py              # Acc, AUC, F1, Precision, Recall
+│   │   ├── reproducibility.py      # Seeds and deterministic setup
+│   │   └── schedulers.py           # Stage-wise LR and freeze/unfreeze control
+│   └── version.py
+├── configs/
+│   ├── base.yaml                   # Shared default configuration
+│   ├── jaad_all.yaml               # JAAD_all experiment config
+│   ├── jaad_beh.yaml               # JAAD_beh experiment config
+│   └── pie.yaml                    # PIE experiment config
+├── scripts/
+│   ├── train.py                    # Main training entrypoint
+│   ├── eval.py                     # Evaluation entrypoint
+│   └── infer.py                    # Inference entrypoint
+├── tests/
+│   ├── test_cmga.py
+│   ├── test_mfe.py
+│   ├── test_scma.py
+│   ├── test_tff.py
+│   └── test_model_shapes.py
+├── assets/
+│   └── architecture.txt            # Text-based architecture diagram / notes
+├── PAPER_BREAKDOWN.md              # Structured technical breakdown of the paper
+├── README.md                       # Project documentation
+├── requirements.txt                # Python dependencies
+├── setup.py                        # Package installation script
+└── .gitignore
 ```
 
-## Installation
+---
+## 4. Method summary
+a multimodal architecture designed to predict whether a pedestrian will cross the road within a short future horizon (1–2 seconds). The method combines visual context understanding and temporal kinematic modeling, with a focus on adaptive and sparse cross-modal fusion.
+
+**Overall Pipeline**
+Given a 16-frame clip, the model processes multimodal inputs through five sequential modules:
+```bash
+Visual Inputs (4 modalities) ──► VFE ──► CMGA ──┐
+                                               ├──► SCMA ──► TFF ──► Prediction
+Kinematic Inputs (speed, bbox, pose) ─► MFE ───┘
+```
+
+**Training Objective**
+The model is trained using a composite loss:
+- Class-weighted Binary Cross-Entropy
+- L2 regularization on classifier weights
+```bash
+L = L_intent + μ · L_reg   (μ = 1e-3)
+```
+**Key Design Principles**
+- Adaptive fusion: CMGA dynamically selects useful visual context
+- Selective interaction: SCMA avoids over-attending across modalities
+- Efficiency: Mamba replaces quadratic attention for temporal modeling
+- Hierarchical reasoning: Separates local (pedestrian-level) and global (scene-level) cues
+  
+---
+## 5. Installation
+This repository is implemented in PyTorch and supports distributed training (DDP) and mixed precision (AMP) as described in the paper
+
+**Requirements**
+- Python ≥ 3.9
+- CUDA ≥ 11.8 
+- PyTorch ≥ 2.1
+- timm ≥ 0.9.12
+- mamba-ssm ≥ 1.2.0
 
 ```bash
 conda create -n adapt python=3.10 -y
@@ -42,6 +149,8 @@ Tested dependency targets from the paper:
 - `torch >= 2.1.0`
 - `timm >= 0.9.12`
 - `mamba-ssm >= 1.2.0` fileciteturn2file0L311-L325
+
+---
 
 ## Dataset preparation
 
@@ -63,17 +172,6 @@ The repository uses **manifest files** for reproducibility. Each JSON manifest i
 }
 ```
 
-### Preprocessing rules enforced by the code
-
-- clip length `16`
-- overlap `80%` (stride `3`)
-- retain clips only if `1s <= TTE <= 2s`
-- resize all visual modalities to `256×256`
-- standardize RGB and semantic maps with ImageNet mean/std
-- replicate single-channel depth to 3 channels and normalize the same way
-- normalize speed by `60 km/h` for JAAD or `70 km/h` for PIE
-- normalize bounding boxes by image size
-- use a **consistent** random horizontal flip across all modalities inside a training clip fileciteturn2file0L280-L310
 
 ### Important paper ambiguity
 
@@ -92,7 +190,7 @@ The base config includes the paper hyperparameters:
 - SCMA: `top_k=2`
 - TFF: 4 layers, 8 heads, MLP ratio `4`, encoder dropout `0.1`, classifier dropout `0.3`
 - total batch size `32` via `8/GPU × 4 GPUs`
-- Adam, no weight decay, gradient clip `1.0`, early stopping patience `25` fileciteturn2file0L252-L263 fileciteturn2file0L313-L326
+- Adam, no weight decay, gradient clip `1.0`, early stopping patience `25` 
 
 ## Training
 
@@ -112,7 +210,7 @@ torchrun --nproc_per_node=4 scripts/train.py --config configs/pie.yaml
 
 - Stage 1, epochs `1–20`: VFE frozen, train non-backbone modules only, `lr=2e-5`
 - Stage 2, epochs `21–80`: unfreeze last two Swin stages, backbone lr `2e-6`
-- Stage 3, epochs `81–150`: continue fine-tuning, decay all lrs by `0.1` at epoch `100` fileciteturn2file0L252-L258
+- Stage 3, epochs `81–150`: continue fine-tuning, decay all lrs by `0.1` at epoch `100` 
 
 The paper contains a freeze-policy inconsistency: Sec. 2.2 says patch embedding and the first two Swin stages stay frozen throughout, while Sec. 2.6 says all stages are unfrozen in Stage 3. This repository defaults to the stricter Sec. 2.2 interpretation, controlled by `train.schedule.strict_vfe_freeze_rule`.
 
@@ -129,7 +227,7 @@ Metrics implemented exactly as described in the paper:
 - F1
 - Precision
 - Recall
-- threshold `0.5` for thresholded metrics; AUC for model selection fileciteturn2file0L327-L356
+- threshold `0.5` for thresholded metrics
 
 ## Inference
 
@@ -160,8 +258,16 @@ The inference output contains probability, predicted label, and the SCMA sparsit
 | JAADALL | 0.91 | 0.85 | 0.76 | 0.74 | 0.78 |
 | PIE | 0.92 | 0.90 | 0.83 | 0.84 | 0.81 |
 
-Reported in the paper tables. fileciteturn2file0L264-L264 fileciteturn2file0L326-L352
+Reported in the paper tables. 
 
-## Citation
+---
 
-Please cite the original ADAPT paper if you use this implementation.
+## 12. License & Contributions
+
+**License :**
+Released under the MIT License. © 2026 GenDiff Authors. All rights reserved.
+
+**Contribution Guidelines :**
+We welcome pull requests and improvements.
+
+---
