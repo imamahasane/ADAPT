@@ -8,7 +8,7 @@ Official implementation of the paper:
 
 > **“Adaptive Cross-Modal Fusion with Sparse Attention for Pedestrian Crossing Intention Prediction”**  
 > *Md Mahfuzur Rahman, Pengzhan Zhou, A. F. M. Abdun Noor, Md Imam Ahasan, Kah Ong Michael Goh, S. M. Hasan Mahmud*  
-> Submitted to **PeerJ Computer Science (Applications of  AI category)**, April 2026.
+> Submitted to **PeerJ Computer Science**, April 2026.
 
 ---
 
