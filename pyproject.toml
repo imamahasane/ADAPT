@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adapt-pedestrian-intention"
+version = "0.1.0"
+description = "Research-grade PyTorch implementation of ADAPT for pedestrian crossing intention prediction"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "OpenAI"}]
+dependencies = [
+  "torch>=2.1.0",
+  "torchvision>=0.16.0",
+  "timm>=0.9.12",
+  "mamba-ssm>=1.2.0",
+  "numpy>=1.24.0",
+  "Pillow>=10.0.0",
+  "PyYAML>=6.0.1",
+  "scikit-learn>=1.4.0",
+  "tensorboard>=2.15.0",
+  "tqdm>=4.66.0"
+]
+
+[tool.setuptools]
+packages = ["adapt"]
+
+[tool.setuptools.package-dir]
+adapt = "adapt"

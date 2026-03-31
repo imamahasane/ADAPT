@@ -1,0 +1,72 @@
+experiment_name: adapt_base
+seed: 3407
+output:
+  root: ./outputs
+reproducibility:
+  deterministic: true
+  cudnn_benchmark: false
+
+dist:
+  backend: nccl
+  sync_batchnorm: true
+
+data:
+  dataset_name: jaad
+  image_size: 256
+  observation_len: 16
+  num_workers: 4
+  speed_max: 60.0
+  train_manifest: ./manifests/jaad_train.json
+  val_manifest: ./manifests/jaad_val.json
+  test_manifest: ./manifests/jaad_test.json
+
+model:
+  vfe:
+    model_name: swinv2_tiny_window16_256
+    out_dim: 256
+    pretrained: false
+    pretrained_checkpoint: null
+    strict_checkpoint: false
+  cmga:
+    channels: 256
+    reduction: 16
+  mfe:
+    input_dim: 41
+    model_dim: 256
+    n_layers: 2
+    d_state: 16
+    d_conv: 4
+    expand: 2
+  scma:
+    in_dim: 256
+    proj_dim: 128
+    top_k: 2
+  tff:
+    embed_dim: 384
+    depth: 4
+    num_heads: 8
+    mlp_ratio: 4.0
+    dropout: 0.1
+    classifier_dropout: 0.3
+
+train:
+  epochs: 150
+  batch_size_per_gpu: 8
+  amp: true
+  lr_main: 2.0e-5
+  lr_backbone: 0.0
+  lr_backbone_stage2: 2.0e-6
+  lr_backbone_stage3: 2.0e-6
+  decay_epoch: 100
+  lr_decay_factor: 0.1
+  grad_clip_norm: 1.0
+  early_stopping_patience: 25
+  schedule:
+    stage1_end: 20
+    stage2_end: 80
+    strict_vfe_freeze_rule: true
+  loss:
+    mu: 1.0e-3
+
+eval:
+  threshold: 0.5

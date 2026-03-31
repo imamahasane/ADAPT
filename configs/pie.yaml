@@ -1,0 +1,9 @@
+base: base.yaml
+experiment_name: adapt_pie
+
+data:
+  dataset_name: pie
+  speed_max: 70.0
+  train_manifest: ./manifests/pie_train.json
+  val_manifest: ./manifests/pie_val.json
+  test_manifest: ./manifests/pie_test.json

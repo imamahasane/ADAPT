@@ -1,0 +1,9 @@
+base: base.yaml
+experiment_name: adapt_jaad_beh
+
+data:
+  dataset_name: jaad_beh
+  speed_max: 60.0
+  train_manifest: ./manifests/jaad_beh_train.json
+  val_manifest: ./manifests/jaad_beh_val.json
+  test_manifest: ./manifests/jaad_beh_test.json
